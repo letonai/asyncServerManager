@@ -1,0 +1,8 @@
+TABLEAGENTS="agents"
+TABLEUSERS="users"
+TABLEFILES="files"
+TABLEREMOTEFILES="remotefiles"
+TABLEREMOTEACTIONS="remoteactions"
+TABLEREMOTEDIR="remotedir"
+TABLEAVALIABLEACTIONS="actions"
+

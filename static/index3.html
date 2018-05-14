@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="sharepoint" ng-csp>
+<head>
+  <title>WAS Manager</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	<link rel='stylesheet' href='http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.1/css/bootstrap-theme.min.css'>
+	<link rel='stylesheet' href='./teste.css'>
+  	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+	<link rel='shortcut icon' type='image/x-icon' href="img/favicon.ico"/>
+	<script>
+	function getCookie(cname) {
+	    var name = cname + "=";
+	    var ca = document.cookie.split(';');
+	    for(var i=0; i<ca.length; i++) {
+	        var c = ca[i];
+	        while (c.charAt(0)==' ') c = c.substring(1);
+	        if (c.indexOf(name) == 0) {
+	            return c.substring(name.length, c.length);
+	        }
+	    }
+	    return "";
+	}
+	
+
+       function logOut() {
+             var d = new Date();
+             d.setTime(d.getTime() + (0*24*60*60*1000));
+             var expires = "expires=" + d.toGMTString();
+	     document.cookie = document.cookie.split(';')[0]+"="+document.cookie.split(':')[1].split(':')[0]+"; "+expires;
+	     
+             window.location="login.html";
+      }
+
+	function checkCookie() {
+	    var user=getCookie("username");
+	    if (user != "") {
+	        //alert("Welcome again " + user);
+	    } else {
+		alert("Nao logado");
+		window.location="login.html"; 
+	   }
+	}
+    </script>
+</head>
+<body >
+
+<div id="wrapper"  ng-controller="userController">
+	<div id="header">
+		<h1>BNP Paribas Cardif</h1>
+		<h2 class="locale">The insurer for a changing world </h2>
+		<!--a href="#" onclick="logOut()">Logout</a-->
+		<a href="#" ng-click="logout()">Logout</a>
+		<div class="info">
+			<!--span>Last access:</span> 11/02/2016 08:11:48 AM - en#PIMS-->
+			<br>
+			<span>User:</span> <script>document.write(getCookie("username").split(":")[0]);</script> <span> 
+		</div>
+				<div class="environment hom">
+					BRASIL DEV/TEST
+				</div>                    
+	</div>
+  <h2>WAS Manager</h2>
+  <ul class="nav nav-tabs" ng-controller="tabsController">
+    <li class="{{uploadstatus}}"><a id="uploadlink" data-toggle="{{uploadtab}}" href="#upload">UPLOAD</a></li>
+    <li class="{{wasstatus}}"><a id="waslink" data-toggle="{{wastab}}" href="#was">LOG VIEWER</a></li>
+    <li class="{{restartstatus}}"><a id="restartlink" data-toggle="{{restarttab}}" href="#restart">REINÍCIO</a></li>   
+  </ul>
+  <div class="tab-content">
+    <div id="upload" class="tab-pane fade in">
+      <div ng-controller="ListController" class="tab-pane fade in ">
+      <form method="POST" enctype="multipart/form-data" action="/" name="myForm">
+          <div class="btn-group">  
+             <input type="submit" value="Enviar" name="upload" id="upload" class="btn btn-default" style="width: 100px; height:36px" /> 
+             <input type="file" name="upfile" id="upfile" class="btn btn-default btn-sm" ng-model="string" ng-mouseenter="uploadLock()" ng-mouseleave="uploadLock()" accept=".jar,.txt,.xls,.csv" style="width: 390px; text-align: left;"/>
+             <input type="button" value="Atualizar" ng-click="update()" id="refresh" class="btn btn-default" style="height:36px" />
+	      </div>
+      <!--label for="sel2">Select list (select one):</label-->
+	<div class="form-group col-sm-2 combos">
+		 <select class="form-control" name="nvList" id="envCombo" style="width:105px; height:36px" ng-model="evList" ngChange="envFilter: this">
+            <option ng-repeat="e in envList" value="{{e}}">{{e}}</option>
+         </select>
+	     <select class="form-control" name="env" id="dirCombo" style="width:150px; height:36px; margin-left: 5px;" ng-model="env" ng-change="update()">     
+			<option ng-repeat="dir in dirList | envFilter: dir " value="{{dir}}" >{{dir}}</option>
+	     </select>
+
+    </div>
+      </form>
+      <hr>
+      <table class="table table-striped table-bordered table-condensed" >
+          <thead>
+              <tr style ="text-align:center;">
+                   <td style="width:50px"><a>&nbsp;</a></td>
+		    <td><div><a>FILE &nbsp;&nbsp;&nbsp;&nbsp;</a><input type="text" class="form-control" style="width:470px; vertical-align:middle; display:inline;" placeholder="Filter..." ng-model="txtFilter"></div></td>
+                    <td style="width:100px; vertical-align:middle;"><a>SIZE</a></td>
+                    <td style="width:150px; vertical-align:middle;"><a>DATE</a></td>
+                    <td style="width:300px; vertical-align:middle;"><a>MD5HASH</a></td>
+		   
+                </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="f in list" >
+	    <td align="center"><img src="remove-icon.png" ng-click="remove(f)" width="16" height="16"></td><td><a download="{{f}}" href="?download={{f}}">{{f}}</a></td><td></td><td></td><td></td>
+        </tr>
+      </tbody>
+      </table>
+
+    </div>
+    </div>
+    <div id="was" ng-controller="LogController" class="tab-pane fade active" >
+		<div class="form-group">
+			<div class="btn-group col-xs-3">  
+				<input type="button" value="Stop" class="btn btn-default" ng-click="stopTimer()"   id="stopBtn"/>
+				<input type="button" value="Start" class="btn btn-default" ng-click="startTimer()" id="startBtn"/>
+				<input type="button" value="Clear" class="btn btn-default" ng-click="clearLog()"/>
+			</div>
+			<div class="form-group col-xs-2" style="width:650px; margin-left: -100px;">
+				<select class="form-control col-sm-8"  name="log" id="log" style="height:36px;" >   
+						<option ng-repeat="logName in logList" value="{{logName[0]}}">{{logName[1]}}</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group">	
+		<div class="col-xs-2">
+			<div class="btn-group" style="margin-left:228px; height:36px;">	
+				<input type="text" class="form-control" style="margin-left: -238px; height:36px; width:220px;" ng-change="search()" ng-model="string" id="search" placeholder="Procurar...">
+				<span class="form-control-feedback" style="display:none;">{{matches}}</span>
+				
+			</div>
+		</div>
+		<div class="btn-group" style="margin-left: 25px; height:36px;">	
+			<input type="button" value="Next" class="btn btn-default btn-xm" style="height:36px;" id="nextBtn" ng-click="nextOccur(1)">
+			<input type="button" value="Back" class="btn btn-default btn-xm" style="height:36px;" id="backBtn" ng-click="nextOccur(-1)">
+		</div>
+		</div>
+				<label for="logStream">Log tail:</label>
+				
+				<textarea class="form-control" rows="15" name="logStream" id="logStream" ng-readonly="true" style="height:400px;" >{{log}}</textarea>
+				<label><input type="checkbox" ng-model="checkboxModel.lock">Stream lock</label><br><a style="display:none;">{{logSize}}</a>
+		   
+    </div>
+	<div id="restart" ng-controller="RestartController" class="tab-pane fade">
+		<div class="form-group col-xs-2" style="display: inline-flex; width: 400px;">
+			<select class="form-control col-sm-8"  name="srv" id="srv" style="width: 250px;">   
+				<option ng-repeat="srvName in srvList" value="{{srvName[0]}}">{{srvName[1]}}</option>
+			</select>
+			<select class="form-control col-sm-8"  name="cmd" id="cmd" style="margin-left: 15px; width: 100px">
+				<option value="stop">Stop</option>
+				<option value="start">Start</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<input type="button" value="►" class="btn btn-default" ng-click="sendCmdServer()"   name="SendBtn" id="SendBtn"/>	
+		</div>
+		
+		<pre>{{restartResponse}}</pre>
+		
+	</div>
+  </div>
+</div>
+
+</body>
+<script>
+    var linha = 10;
+    var timer = null;
+    var running=false;
+    var app =  angular.module('sharepoint', []);
+    var usrName = document.cookie.split(';');
+  
+
+    app.controller("userController",function($scope,$http){
+
+     $scope.logout = function(){
+                $http.get('/logout?sid='+document.cookie.split(':')[3]).success(function(data) {
+			       // d.setTime(d.getTime() + (0*24*60*60*1000));
+		                //var expires = "expires=" + d.toGMTString();
+                                //document.cookie = document.cookie.split(';')[0]+"="+document.cookie.split(':')[1].split(':')[0]+"; "+expires;
+                                //window.location="/login.html";
+				logOut();
+
+                        });
+        };	
+});   
+ 
+ var envLista=[];
+ app.filter('envFilter', function($filter) {
+ 
+    return function(x) {
+	var itens=[];
+	if(envLista!=""){
+		//console.log("OOO: "+envLista);
+		for(var a in envLista.split(',')){
+			if(itens.indexOf(envLista.split(',')[a])==-1){
+				itens.push(envLista.split(',')[a]);
+				//console.log("ZZZ: "+envLista.split(',')[a]);
+			}
+		}
+	}
+	filtro=document.getElementById("envCombo").value;		
+        var vec=[];
+        for (var item in itens){ 
+	        if(itens[item].split('|')[0]==filtro){
+	        	//console.log("XXX: "+itens[item].split('|')[1]);
+				if(vec.indexOf(itens[item].split('|')[1])==-1){
+	    			//console.log("ZZZ: "+itens[item].split('|')[1]);
+		            vec.push(itens[item].split('|')[1]);
+				}
+			
+	        }
+        };
+        return vec;
+    };
+});
+
+
+    app.controller('tabsController',function($scope,$http) {
+	
+
+	 $scope.checkPerm = function(){
+             up   =  1;//document.cookie.split(':')[2].split(",")[0];
+             was  =  1;//document.cookie.split(':')[2].split(",")[1];
+             rest =  1;//document.cookie.split(':')[2].split(",")[2];
+             loaded = falsess;   
+		if(up==1){
+            $scope.uploadtab="tab";
+			if(!loaded){
+				$('#uploadlink').tab('show');
+				$scope.uploadstatus="active";
+			}
+			loaded=true;
+                }
+                if(was == 1){
+                        $scope.wastab="tab";
+			//$scope.wasstatus="active";
+			//$scope.waslink.click();
+			
+			if(!loaded){
+				$scope.wasstatus="active";
+        			$('#waslink').tab('show');
+			}
+    
+			loaded=true;
+			//window.location=document.getElementsByName("waslink")[0];
+                }
+                if(rest == 1){
+                        $scope.restarttab="tab";
+			if(!loaded){
+				$('#restartlink').tab('show');
+				$scope.restartstatus="active";
+			}
+			loaded=true;
+				
+                }
+		
+        }
+		$('#uploadlink').tab('show');
+        //$scope.checkPerm();
+	
+	});
+    app.controller('ListController', function($scope, $http,$window) {
+$scope.first=true;
+       
+	   $scope.serverList = function(){
+		$http.get('/agents').success(function(data) {
+				$scope.first=true;
+				$scope.envList=[];
+				for(var i=0;i<data.length;i++){
+					$scope.envList[i]=(data[i].SERVERNAME); 
+				}
+        }).error(function(data, status) {
+                        console.error('Error: ', status, data);
+                       /* alert("Sessão Expirada! Logue novamente para continuar")
+                        logOut();
+                        window.location="/login.html";*/
+                });;
+	  };
+	  
+	  $scope.serverList();
+	  $scope.list = [];
+      $scope.update = function() {
+		$http.get('/getremotefilelist?server='+$(envCombo).val()+'&dir='+$(dirCombo).val()).success(function(data) {
+			x=[];
+			for(var i=0;i<data.length;i++){
+				x=eval(data[i].RESULT);
+				console.log(eval(data[i].RESULT));
+			}
+			$scope.list = x;
+        }).error(function(data, status) {
+        		console.log($(dirCombo).val()+status);
+                        console.error('Error: ', status, data);
+                       /* alert("Sessão Expirada! Logue novamente para continuar")
+                        logOut();
+                        window.location="/login.html";*/
+                });
+      };
+      $scope.update();
+
+     $scope.remove = function(file){
+	answer=$window.confirm("Tem certeza que deseja apagar o arquivo "+file+"? Esta operação não poderá ser desfeita!");
+	if(answer){
+		$http.get('/removefile?dir='+$(dirCombo).val()+'&file='+file).success(function(data) {
+				$scope.update();
+			}).error(function(data, status) {
+                        console.error('Error: ', status, data);
+                       /* alert("Sessão Expirada! Logue novamente para continuar")
+                        logOut();
+                        window.location="/login.html";*/
+                });
+	}
+        
+			$scope.update();
+	};
+ 
+	  $scope.uploadLock = function(){
+		if($('#upfile').val()==''){
+			$(":submit").attr("disabled", true);
+		}else{
+			$(":submit").attr("disabled", false);
+		}
+	  };
+	 
+	  $(":submit").attr("disabled", true);
+	  
+	 
+      
+    });
+	
+	app.controller("RestartController",function($scope, $http, $interval){
+	
+		$scope.listServer = function(){
+			$http.get('/serverList/'+"a/"+document.cookie.split(':')[3]).success(function(data) {
+			  $scope.srvList = data;
+			}).error(function(data, status) {
+                        console.error('Error: ', status, data);
+                        /*alert("Sessão Expirada! Logue novamente para continuar")
+                        logOut();
+                        window.location="/login.html";*/
+                });
+		}
+		$scope.listServer();
+		
+		$scope.sendCmdServer = function(){
+			$scope.restartResponse = "Command sent... wainting response!";
+			$(SendBtn).attr("disabled",true);
+			$http.get('/restartServer/'+$(srv).val()+'/'+$(cmd).val()+'/'+Math.random()+'/'+document.cookie.split(';')[0].split(':')[3]).success(function(data) {
+				$(SendBtn).attr("disabled",false);
+				
+			    $scope.restartResponse = data;
+			}).error(function(data, status) {
+                        console.error('Error: ', status, data);
+                       /* alert("Sessão Expirada! Logue novamente para continuar")
+                        logOut();
+                        window.location="/login.html";*/
+                });
+		}
+		
+	});
+
+
+    app.controller('LogController',function($scope, $http, $interval){                     
+        $(stopBtn).attr("disabled",true); 
+	
+	
+	$scope.clearLog = function(){ 
+        	$scope.log=""
+	}
+	
+	$scope.listLogs = function(){
+		$http.get('/logList/'+'a/'+document.cookie.split(':')[3]).success(function(data) {
+          $scope.logList = data;
+        }).error(function(data, status) {
+                        console.error('Error: ', status, data);
+                      /*  alert("Sessão Expirada! Logue novamente para continuar")
+                        logOut();
+                        window.location="/login.html";*/
+                });
+	}
+	$scope.listLogs();
+	
+	
+	
+	$scope.stopTimer = function(){
+	        $(startBtn).attr("disabled",false);
+                $(stopBtn).attr("disabled",true);
+		$interval.cancel(timer);
+	}
+
+	 $scope.startTimer = function(){
+                $(startBtn).attr("disabled",true);
+                $(stopBtn).attr("disabled",false);
+		$http.get('/logSize/'+$(log).val()+'/'+Math.random()+"/"+document.cookie.split(':')[3]).success(function(data) {
+			linha=parseInt(data);
+			$scope.logSize=linha;
+			$(logStream).select(1,10);
+                }).error(function(data, status) {
+		        console.error('Error: ', status, data);
+		//	alert("Sessão Expirada! Logue novamente para continuar")
+		//	logOut();
+			//window.location="/login.html";
+		});
+		timer = $interval(function(){
+             	$http.get('/logStream/'+(linha-1)+'-'+linha+'/'+$(log).val()+'/'+Math.random()+"/"+document.cookie.split(':')[3]).success(function(data) {
+                             if(data!=""){
+                                  linha+=1;
+                                  $scope.log=$scope.log+data;
+	                          if($scope.checkboxModel.lock){       
+				$(logStream).scrollTop($(logStream)[0].scrollHeight);
+									
+		  }
+                  }
+                  }).error(function(data, status) {
+                        console.error('Error: ', status, data);
+                        //alert("Sessão Expirada! Logue novamente para continuar")
+                        //logOut();
+                        //window.location="/login.html";
+                });
+            },500);
+	 }
+	var foundMatches=[];
+	var occurrence = 0;
+	var lineHeight = parseInt($(logStream).css('line-height'));
+	$scope.search = function(){
+			foundMatches=[];
+			var j = 0;
+			var q = document.getElementById('logStream');
+			var quebras = q.value.split('\n');
+			var linhaPadrao=0;
+			console.log("Total: "+quebras.length);
+		for ( var i = 0;i<quebras.length;i++){
+			if($(search).val()!=""){
+				if(quebras[i].indexOf($(search).val())!=-1){
+					console.log($(search).val()+" encontrado em: "+i);
+					console.log($(logStream)[0].scrollHeight+" "+i);
+					var lineHeight = parseInt($(logStream).css('line-height'));
+					foundMatches[j++]=i;
+					occurrence = 0;				
+				}
+			}
+		}
+		
+		$scope.matches=$(search).val()==""?0:foundMatches.length;
+		 console.log(j+" Ultima Ocorrencia: "+parseInt(foundMatches[foundMatches.length]));
+		 $(logStream).scrollTop(parseInt(foundMatches[0])*lineHeight);
+		
+	}
+	
+	$scope.nextOccur = function(sum){
+		 if((occurrence+sum)<=foundMatches.length-1 && (occurrence+sum)>=0){
+			occurrence+=sum;
+		 }
+		 console.log(sum+" Avanca: "+occurrence);
+                 $(logStream).scrollTop(parseInt(foundMatches[occurrence])*lineHeight);
+		
+	}                    
+});
+
+ //checkCookie();
+  </script>
+</html>
