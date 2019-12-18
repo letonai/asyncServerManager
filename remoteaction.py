@@ -12,16 +12,18 @@ import base64
 import pdb
 import datamodel
 import time 
+import paho.mqtt.client as mqtt
+
+
 
 CWD = os.path.dirname(os.path.abspath(__file__))+"/"
 DBFILE=".controller.dat"
 DB=web.database(dbn="sqlite",db=DBFILE)
-#ABLEFILES="files"
-#TABLEREMOTEFILES="remotefiles"
-#TABLEREMOTEACTIONS="remoteactions"
+client = mqtt.Client()
+client.connect("127.0.0.1",1883,60)
 
 class remoteAction:
-	
+
 	def GET(self,uri):
 		web.header('Content-Type','application/json')
 		web.header('Cache-Control','no-store, no-cache, must-revalidate, max-age=0')
@@ -30,10 +32,15 @@ class remoteAction:
 		web.header('ETag',str(time.time()))
 		exec('getData={"'+web.ctx['query'].replace('=','":"').replace('&','","').strip('?')+'"}')
 		date = int(time.strftime("%s"))
-		return DB.insert(datamodel.TABLEREMOTEACTIONS, ACTION=getData["action"],PARAMETERS=getData['param'],SOURCESERVER=getData['server'],APPLICATIONTARGET=getData['application'],RESULT="",DATE=date) 
-		
+		print("--------------------------------------------------")
+		client.publish(getData['server']+"/"+getData['application'],str(getData),0,False) 
+		return DB.insert(datamodel.TABLEREMOTEACTIONS, REQUESTDATE=(time.time()), ACTION=getData["action"],PARAMETERS=getData['param'],SOURCESERVER=getData['server'],APPLICATIONTARGET=getData['application'],RESULT="",DATE=date) 
+
 	def POST(self,uri):
 		return "nope"
+	
+	def on_connect(client, userdata, flags, rc):
+		print("Connected")
 
 
 class remoteActionStatus:

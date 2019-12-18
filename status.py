@@ -18,7 +18,7 @@ class status:
 		web.header('Pragma','no-cache') 
 		#/getremotequeuedactions"
 		exec('getData={"'+web.ctx['query'].replace('=','":"').replace('&','","').strip('?')+'"}')
-		rs=DB.query("select ACTION,PARAMETERS,DATE from %s where ifnull(RESULT, '') = '' and SOURCESERVER='%s'" % (TABLEREMOTEACTIONS,getData['servername']))
+		rs=DB.query("select ACTION,PARAMETERS, DATE from %s where ifnull(RESULT, '') = '' and SOURCESERVER='%s' and REQUESTDATE > %d" % (TABLEREMOTEACTIONS,getData['servername'],(time.time()-120)))
 		return json.dumps(list(rs))
 	 
 	def POST(self,url):

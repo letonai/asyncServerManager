@@ -4,164 +4,67 @@
   <title>WAS Manager</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"/>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-	<link rel='stylesheet' href='http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.1/css/bootstrap-theme.min.css'>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+	
+<link rel="stylesheet"
+      href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+	<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.1/css/bootstrap-theme.min.css'>
 	<link rel='stylesheet' href='./teste.css'>
-  	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+  	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
 	<link rel='shortcut icon' type='image/x-icon' href="img/favicon.ico"/>
-	<script>
-	function getCookie(cname) {
-	    var name = cname + "=";
-	    var ca = document.cookie.split(';');
-	    for(var i=0; i<ca.length; i++) {
-	        var c = ca[i];
-	        while (c.charAt(0)==' ') c = c.substring(1);
-	        if (c.indexOf(name) == 0) {
-	            return c.substring(name.length, c.length);
-	        }
-	    }
-	    return "";
-	}
-	
-
-       function logOut() {
-             var d = new Date();
-             d.setTime(d.getTime() + (0*24*60*60*1000));
-             var expires = "expires=" + d.toGMTString();
-	     document.cookie = document.cookie.split(';')[0]+"="+document.cookie.split(':')[1].split(':')[0]+"; "+expires;
-	     
-             window.location="login.html";
-      }
-
-	function checkCookie() {
-	    var user=getCookie("username");
-	    if (user != "") {
-	        //alert("Welcome again " + user);
-	    } else {
-		alert("Nao logado");
-		window.location="login.html"; 
-	   }
-	}
-    </script>
 </head>
-<body >
-
-<div id="wrapper"  ng-controller="userController">
-	<div id="header">
-		<h1>BNP Paribas Cardif</h1>
-		<h2 class="locale">The insurer for a changing world </h2>
-		<!--a href="#" onclick="logOut()">Logout</a-->
-		<a href="#" ng-click="logout()">Logout</a>
-		<div class="info">
-			<!--span>Last access:</span> 11/02/2016 08:11:48 AM - en#PIMS-->
-			<br>
-			<span>User:</span> <script>document.write(getCookie("username").split(":")[0]);</script> <span> 
-		</div>
+<body>
+	<div id="wrapper"  ng-controller="tabsController">
+		<div id="header">
+			<h1>BNP Paribas Cardif</h1>
+			<h2 class="locale">The insurer for a changing world </h2>
+			<!--a href="#" onclick="logOut()">Logout</a-->
+			<a href="#" ng-click="logout()">Logout</a>
+			<div class="info">
+				<br>
+				<span>User:</span> 
 				<div class="environment hom">
-					QA Environment
-				</div>                    
+						QA Environment
+				</div>
+			</div>
+		</div>			
+		<h2>Was Manager</h2>
+		<ul class="nav nav-tabs" >
+			<li ng-click="setActive(srv)" ng-repeat="srv in srvList" ><a id="{{srv}}link" data-toggle="{{srv}}tab" href="#{{srv}}">{{srv}}</a></li>
+		</ul>
+		<div class="tab-content" >
+			<div id="{{srv}}" class="tab-pane fade in" ng-repeat="srv in srvList">
+				<div class="tab-pane fade in ">
+					{{srv}}
+					<form method="POST" enctype="multipart/form-data" action="/" name="myForm">
+						<div class="btn-group">  
+							<input type="button" value="Execute" ng-click="sendAction()" id="execute" class="btn btn-default" >
+						</div>
+						<div class="form-group col-sm-2" >
+							
+							<!--select class="form-control" name="actions" id="actionCombo" ng-options="action as action.ACTION for action in actionList track by action.ACTION"  ng-model="selected"-->
+							<select class="form-control" name="actions" id="actionCombo{{srv}}" >
+								<option ng-repeat="action in actionList" value="{{action['ACTION']}}">{{action['ACTION']}}</option>
+							</select>
+							<div ng-controller="tabsController">
+								<button ng-repeat="action in actionList">x</button> 
+							</div>
+						</div>
+					</form>
+					<hr>
+						<center>
+							<div id="{{srv+'loading'}}" style="display: none"><img src="./loading.gif" width="50px" height="50px"/></div>
+							<div id="{{srv+'imgresponse'}}"></div>
+							<textarea  class="pre-scrollable html" id="{{srv+'cmdResponse'}}" ></textarea>
+						</center>
+
+				</div>
+			</div>
+		</div>
 	</div>
-  <h2>Was Manager</h2>
-  <ul class="nav nav-tabs" ng-controller="tabsController">
-    <li class="{{uploadstatus}}"><a id="uploadlink" data-toggle="{{uploadtab}}" href="#upload">UPLOAD</a></li>
-    <li class="{{wasstatus}}"><a id="waslink" data-toggle="{{wastab}}" href="#was">WAS</a></li>
-    <li class="{{restartstatus}}"><a id="restartlink" data-toggle="{{restarttab}}" href="#restart">Restart</a></li>   
-  </ul>
-  <div class="tab-content">
-    <div id="upload" class="tab-pane fade in">
-      <div ng-controller="ListController" class="tab-pane fade in ">
-      <form method="POST" enctype="multipart/form-data" action="/" name="myForm">
-          <div class="btn-group">  
-             <input type="submit" value="upload" name="upload" id="upload" class="btn btn-default" /> 
-             <input type="file" name="upfile" id="upfile" class="btn btn-default btn-sm" ng-model="string" ng-mouseenter="uploadLock()" ng-mouseleave="uploadLock()" accept=".jar,.jpg"/>
-             <input type="button" value="refresh list" ng-click="update()" id="refresh" class="btn btn-default" />
-	      </div>
-      <!--label for="sel2">Select list (select one):</label-->
-	<div class="form-group col-sm-2">
-	    <select class="form-control"  name="env" id="dirCombo">     
-			<option ng-repeat="dir in dirList" value="{{dir['SERVERNAME']}}">{{dir['SERVERNAME']}}</option>
-	     </select>
-          </div>
-         
-      </form>
-
-      <hr>
-
-      <table class="table table-striped table-bordered table-condensed" >
-          <thead>
-              <tr>
-                  <td>Action</td><td>File<input type="text" class="form-control" placeholder="Filter..." ng-model="txtFilter"></td>
-                    
-		   
-                </tr>
-      </thead>
-      <tbody>
-        <tr ng-repeat="f in list | filter: txtFilter" >
-	
-    <td align="center"><img src="remove-icon.png" width="16" height="16"></td><td><a download="{{f[0]}}" href="?download={{f.split(',')[0]}}">{{f.split(',')[0]}}</a></td><td>{{f.split(',')[2]}}</td><td>{{f.split(',')[3]}}</td><td>{{f.split(',')[4]}}</td>
-        </tr>
-      </tbody>
-      </table>
-
-    </div>
-    </div>
-    <div id="was" ng-controller="LogController" class="tab-pane fade active" >
-		<div class="form-group">
-			<div class="btn-group col-xs-3">  
-				<input type="button" value="Stop" class="btn btn-default" ng-click="stopTimer()"   id="stopBtn"/>
-				<input type="button" value="Start" class="btn btn-default" ng-click="startTimer()" id="startBtn"/>
-				<input type="button" value="Clear" class="btn btn-default" ng-click="clearLog()"/>
-			</div>
-			<div class="form-group col-xs-2">
-				<select class="form-control col-sm-8"  name="log" id="log">   
-						<option ng-repeat="logName in logList" value="{{logName[0]}}">{{logName[1]}}</option>
-				</select>
-			</div>
-		</div>
-		<div class="form-group">	
-		<div class="col-xs-2">
-			<div class="btn-group">	
-				<input type="text" class="form-control" ng-change="search()" ng-model="string" id="search" placeholder="Procurar...">
-				<span class="form-control-feedback">{{matches}}</span>
-				
-			</div>
-		</div>
-		<div class="btn-group">	
-			<input type="button" value="Next" class="btn btn-default btn-xm" id="nextBtn" ng-click="nextOccur(1)">
-			<input type="button" value="Back" class="btn btn-default btn-xm" id="backBtn" ng-click="nextOccur(-1)">
-		</div>
-				
-			
-		</div>
-			
-				<label for="logStream">Log tail:</label>
-				
-				<textarea class="form-control" rows="5" name="logStream" id="logStream" ng-readonly="true">{{log}}</textarea>
-				<label><input type="checkbox" ng-model="checkboxModel.lock">Stream lock</label><br>{{logSize}}
-		   
-    </div>
-	<div id="restart" ng-controller="RestartController" class="tab-pane fade" >
-		<div class="form-group col-xs-2">
-			<select class="form-control col-sm-8"  name="srv" id="srv">   
-				<option ng-repeat="srvName in srvList" value="{{srvName[0]}}">{{srvName[1]}}</option>
-			</select>
-			<select class="form-control col-sm-8"  name="cmd" id="cmd">   
-				<option value="stop">Stop</option>
-				<option value="start">Start</option>
-			</select>
-		</div>
-		<div class="form-group">
-			<input type="button" value="Send Command" class="btn btn-default" ng-click="sendCmdServer()"   name="SendBtn" id="SendBtn"/>	
-		</div>
-		
-		<pre>{{restartResponse}}</pre>
-		
-	</div>
-  </div>
-</div>
-
 </body>
 <script>
     var linha = 10;
@@ -172,109 +75,148 @@
     var lastCheck="0";
     var lastChecked="0";
     
+	var Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9+/=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},_utf8_encode:function(e){e=e.replace(/rn/g,"n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},_utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}}
+    
     app.controller("userController",function($scope,$http){
 
-     $scope.logout = function(){
+    $scope.logout = function(){
                 $http.get('/logout?sid='+document.cookie.split(':')[3]).success(function(data) {
 					logOut();
 
                 });
         };	
-});   
+	});   
  
-    app.controller('tabsController',function($scope,$http) {
-	 $scope.checkPerm = function(){
-             up   =  1;//document.cookie.split(':')[2].split(",")[0];
-             was  =  1;//document.cookie.split(':')[2].split(",")[1];
-             rest =  1;//document.cookie.split(':')[2].split(",")[2];
-             loaded = false;   
-		if(up==1){
-                        $scope.uploadtab="tab";
-			if(!loaded){
-				$('#uploadlink').tab('show');
-				$scope.uploadstatus="active";
+    app.controller('tabsController',function($scope,$http,$interval) {
+
+	   $scope.serversTabs = function(){
+	   
+		$http.get('/agents/'+document.cookie.split(':')[3]).success(function(data) {
+			list = [];
+			for(var i=0;i<data.length;i++){
+				list[i] = data[i]['SERVERNAME'].split('.')[0]
 			}
-			loaded=true;
-                }
-                if(was == 1){
-                        $scope.wastab="tab";
-			//$scope.wasstatus="active";
-			//$scope.waslink.click();
+			$scope.srvList = list;
 			
-			if(!loaded){
-				$scope.wasstatus="active";
-        			$('#waslink').tab('show');
-			}
-    
-			loaded=true;
-			//window.location=document.getElementsByName("waslink")[0];
-                }
-                if(rest == 1){
-                        $scope.restarttab="tab";
-			if(!loaded){
-				$('#restartlink').tab('show');
-				$scope.restartstatus="active";
-			}
-			loaded=true;
-				
-                }
-		
-        }
-
-        $scope.checkPerm();
-	
-	});
-
-    app.controller('ListController', function($scope, $http,$window,$timeout) {
-       
-	   $scope.uploadDir = function(){
-		
-		$http.get('/agents/'+Math.random()+'/a/'+document.cookie.split(':')[3]).success(function(data) {
-			$scope.dirList = data;
         }).error(function(data, status) {
-                        console.error('Error: ', status, data);
-                        alert("Sessão Expirada! Logue novamente para continuar")
-                        //logOut();
-                        //window.location="/login.html";
-                });;
+                        console.error("'Error: ", status, data);
+                });
 	  };
-	  
-	  $scope.uploadDir();
 	
-		
-	  
-	  $scope.list = [];
-	  $scope.listTmp = $scope.list;
-      $scope.update = function() {
-    		//alert($(dirCombo).val());
-    		var date="";
-    		var x=[];
-				$http.get('/getremotefilelist?server='+$(dirCombo).val()).success(function(data) {
-					console.log("OK");
-					for (var j=0;j<data.length;j++) {
-						var files;
-						date=data[j]['DATE'];
-						//console.log("TEST: "+lastCheck+" "+(lastCheck!="0"));
-						//console.log("DATE: "+lastCheck+" R "+data[j]['RESULT']+"-");
-						if(data[j]['RESULT']!=""){
-							console.log("oi");
-							files=eval(data[j]['RESULT']);
-							for(var i=0;i<files.length;i++){
-								//console.log(files[i]);
-								x[i]=files[i];
+	$scope.currentSrv="";
+    $scope.actionList = [];
+	$scope.setActive = function(s){
+		console.log(s);
+		for(var i =0; i<$scope.srvList.length;i++){
+			$('#'+$scope.srvList[i]).removeClass('show');
+			
+		}
+		$scope.updateAction(s);
+		$('#'+s).addClass('show');
+		$scope.currentSrv=s;
+		$('#'+$scope.currentSrv+'loading').hide();
+     	$('#'+$scope.currentSrv+'cmdResponse').hide();
+	}
+	$scope.serversTabs();
+	//$scope.actionList = [];
+    $scope.updateAction= function(srv) {
+	 	var date="";
+	    var x=[];
+	    $http.get("/getremoteactionlist?server="+srv).success(function(data) {
+	    	$scope.actionList = data;
+		}).error(function(data, status) {console.error("Error: ", status, data);});
+	};
+	  $scope.sendAction = function(){
+	  		$('#'+$scope.currentSrv+'loading').show();
+	  		$('#'+$scope.currentSrv+'cmdResponse').hide();
+	  		$('#'+$scope.currentSrv+'imgresponse').hide();
+			$http.get("/setremoteaction?server="+$scope.currentSrv+"&param="+escape($('#'+$scope.currentSrv+'cmdResponse').val())+"&action="+$('#actionCombo'+$scope.currentSrv).val()+"&application=teste").success(function(data) {
+				
+				checkResultTimer = $interval(function(){
+             	$http.get("/getremoteactionstatus?server="+$scope.currentSrv+"&ID="+data).success(function(d) {
+						
+						if(d[0]!=null || d[0]!=""){
+						 	if(((new Date()).getTime()/1000)- d[0]['DATE']>120 || d[0]['RESULT']!=""){
+						 		$interval.cancel(checkResultTimer);
+						 		$('#'+$scope.currentSrv+'loading').hide();
+						 		if((d[0]['RESULT']).indexOf('::image/jpeg::')>-1){
+						 			var imgdata = d[0]['RESULT'].replace('::image/jpeg::','');
+						 			$('#tmpimg').remove();
+						 			$('#'+$scope.currentSrv+'imgresponse').append('<img id="tmpimg" src="data:image/jpeg;base64,'+imgdata+'">');
+						 			$('#'+$scope.currentSrv+'imgresponse').show();
+						 			$('#'+$scope.currentSrv+'cmdResponse').hide();
+						 		}else{
+									$('#'+$scope.currentSrv+'cmdResponse').text(Base64.decode(d[0]['RESULT']));
+									$('#'+$scope.currentSrv+'cmdResponse').show();
+									$('#'+$scope.currentSrv+'imgresponse').hide();
+						 		}
 							}
 						}
-					}
-					$scope.list = x;
-		        }).error(function(data, status) {
-					console.error('Error: ', status, data);
-		                });
-		                
-    		//alert("Dentyro "+date);
-			//$scope.update(date);
-      };
-      
+                  }).error(function(data, status) {
+                        console.error("Error: ", status, data);
+                  });
+				},2000);
+	});
+}
+});
 
+
+//    app.controller("ListController", function($scope, $http,$window,$timeout,$interval){
+//	   $scope.uploadDir = function(){
+//		$http.get('/agents/'+Math.random()+'/a/'+document.cookie.split(':')[3]).success(function(data) {
+//			$scope.dirList = data;
+//        }).error(function(data, status) {
+//                        console.error("'Error: ", status, data);
+//                        alert("Sessão Expirada! Logue novamente para continuar")
+//                        //logOut();
+//                        //window.location="/login.html";
+//                });
+//	  };
+//	  
+//	  $scope.uploadDir();
+//	
+//		
+//	  
+//	  $scope.list = [];
+//	  $scope.listTmp = $scope.list;
+//      $scope.updateAction= function() {
+//    		var date="";
+//    		var x=[];
+//				$http.get("/getremoteactionlist?server="+$(dirCombo).val()).success(function(data) {
+//					console.log("OK");
+//					$scope.actionList = data;
+//		        }).error(function(data, status) {
+//					console.error("Error: ", status, data);
+//		                });
+//		                
+//      };
+//      
+//	  $scope.sendAction = function(){
+//			//$scope.actionResponse = "Command sent... wainting response!";responsee
+//			//$(SendBtn).attr("disabled",true);
+//			$http.get("/setremoteaction?server="+$(dirCombo).val()+"&param=/apps&action="+$(actionCombo).val()+"&application=teste").success(function(data) {
+//				//$(SendBtn).attr("disabled",false);
+//			    //$scope.cmdResponse = "Waiting response...";
+//				console.log(data)
+//				checkResultTimer = $interval(function(id=data){
+//             	$http.get("/getremoteactionstatus?server="+$(dirCombo).val()+"&param=/apps&ID="+data).success(function(d) {
+//		  				 $scope.cmdResponse = d;
+//						 if(((new Date()).getTime()/1000)- d[0]['DATE']>120 || d[0]['RESULT']!=""){
+//						 	$interval.cancel(checkResultTimer);
+//							$scope.cmdResponse=d[0]['RESULT']
+//							console.log("FIM!");	 		
+//						 }
+//                  }).error(function(data, status) {
+//                        console.error("Error: ", status, data);
+//                  });
+//				},2000);
+//	});
+//	};
+//});
+
+    app.controller('LogController',function($scope, $http, $interval){                     
+        $(stopBtn).attr("disabled",true); 
+	
     
     $scope.remove = function(file){
 	answer=$window.confirm("Tem certeza que deseja apagar o arquivo "+file+"? Esta operação não poderá ser desfeita!");
@@ -301,9 +243,6 @@
 	  };
 	 
 	  $(":submit").attr("disabled", true);
-	  
-	 
-      
     });
 	
 	app.controller("RestartController",function($scope, $http, $interval){
@@ -311,19 +250,19 @@
 		$scope.listServer = function(){
 			$http.get('/agents').success(function(data) {
 			  $scope.srvList = data;
+			  alert(data)
 			}).error(function(data, status) {
                         console.error('Error: ', status, data);
-
                 });
 		}
 		$scope.listServer();
-		
+		//"/setremoteaction?server="+srvName+"&param=/apps&action="+action+"&application=teste"
+
 		$scope.sendCmdServer = function(){
 			$scope.restartResponse = "Command sent... wainting response!";
 			$(SendBtn).attr("disabled",true);
 			$http.get('/restartServer/'+$(srv).val()+'/'+$(cmd).val()+'/'+Math.random()+'/'+document.cookie.split(';')[0].split(':')[3]).success(function(data) {
 				$(SendBtn).attr("disabled",false);
-				
 			    $scope.restartResponse = data;
 			}).error(function(data, status) {
                         console.error('Error: ', status, data);
@@ -435,3 +374,4 @@
  //checkCookie();
   </script>
 </html>
+

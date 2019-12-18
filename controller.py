@@ -19,6 +19,7 @@ from status import status
 #from cheroot.server import HTTPServer
 #from cheroot.ssl.builtin import BuiltinSSLAdapter
 from web.wsgiserver import CherryPyWSGIServer
+from errorPage import errorPage
 
 #Disable/Enable debug messages
 #web.config.debug = False
@@ -42,7 +43,8 @@ urls = (
     "/setremoteaction(.*)", remoteAction,
     "/getremoteactionlist(.*)", remoteActionList,
     "/getremoteactionstatus(.*)", remoteActionStatus,
-    "/registerremoteaction(.*)", remoteActionRegister
+    "/registerremoteaction(.*)", remoteActionRegister,
+    "/(.*)", errorPage
 
 )
 
@@ -50,13 +52,17 @@ app = web.application(urls, globals())
 
 CONN=None
 
+
+
+    
+
 def firstRun():
     print "No previous configuration detected!"
     DB.query("create table %s (ID integer primary key autoincrement,SERVERNAME text,IP text)" % (datamodel.TABLEAGENTS))
     DB.query("create table %s (USERID text,PERMISSIONS blob )" % (datamodel.TABLEUSERS))
     DB.query("create table %s (FILEID text ,FILENAME text ,SERVERTARGET text, APPLICATIONTARGET text,HASH text,DOWNLOADED text )" % datamodel.TABLEFILES)
     DB.query("create table %s (FILEID text ,FILENAME text ,SOURCESERVER text, APPLICATIONTARGET text,HASH text,DOWNLOADED text )" % datamodel.TABLEREMOTEFILES)
-    DB.query("create table %s (ID integer primary key autoincrement, ACTION text ,PARAMETERS text,SOURCESERVER text, APPLICATIONTARGET text ,RESULT text ,DATE text )" % datamodel.TABLEREMOTEACTIONS)
+    DB.query("create table %s (ID integer primary key autoincrement,REQUESTDATE date, ACTION text ,PARAMETERS text,SOURCESERVER text, APPLICATIONTARGET text ,RESULT text ,DATE text )" % datamodel.TABLEREMOTEACTIONS)
     DB.query("create table %s (ID integer primary key autoincrement, SOURCESERVER text ,DIR text, APPLICATION text)" % datamodel.TABLEREMOTEDIR)
     DB.query("create table %s (ID integer primary key autoincrement, SOURCESERVER text ,ACTION text, APPLICATION text)" % datamodel.TABLEAVALIABLEACTIONS)
 
@@ -74,3 +80,4 @@ if __name__ == "__main__":
     if not os.path.exists( DBFILE ):
     	firstRun()
     app.run()
+

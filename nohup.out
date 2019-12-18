@@ -1,0 +1,25 @@
+Traceback (most recent call last):
+  File "/home/letonai/workspace/asyncServerManager/web/application.py", line 237, in process
+    return p(lambda: process(processors))
+  File "/home/letonai/workspace/asyncServerManager/web/application.py", line 607, in processor
+    h()
+  File "/home/letonai/workspace/asyncServerManager/web/application.py", line 703, in __call__
+    self.check(mod)
+  File "/home/letonai/workspace/asyncServerManager/web/application.py", line 722, in check
+    reload(mod)
+  File "/home/letonai/workspace/asyncServerManager/remoteaction.py", line 23, in <module>
+    class remoteAction:
+  File "/home/letonai/workspace/asyncServerManager/remoteaction.py", line 25, in remoteAction
+    client.on_connect = on_connect
+NameError: name 'on_connect' is not defined
+
+187.101.104.1:60176 - - [26/Oct/2019 16:06:57] "HTTP/1.1 GET /getremotequeuedactions" - 500 Internal Server Error
+https://0.0.0.0:8081/
+Traceback (most recent call last):
+  File "./controller.py", line 13, in <module>
+    from remoteaction import remoteAction
+  File "/home/letonai/workspace/asyncServerManager/remoteaction.py", line 23, in <module>
+    class remoteAction:
+  File "/home/letonai/workspace/asyncServerManager/remoteaction.py", line 25, in remoteAction
+    client.on_connect = on_connect
+NameError: name 'on_connect' is not defined

